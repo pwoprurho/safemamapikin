@@ -1,0 +1,72 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_apk:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.21.0'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --ignore-engines
+
+      - name: Create .env file
+        run: |
+          cat > .env << 'EOL'
+          FIREBASE_FUNCTIONS_URL=
+          SUPABASE_URL=
+          SUPABASE_ANON_KEY=
+          PALSHUB_API_BASE_URL=
+          APP_URL=pocketpal://app
+          ENABLE_PALSHUB_INTEGRATION=false
+          ENABLE_AUTHENTICATION=false
+          ENABLE_OFFLINE_MODE=true
+          GOOGLE_IOS_CLIENT_ID=
+          GOOGLE_WEB_CLIENT_ID=
+          EOL
+
+      - name: Build Release APK
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kusmus-ai-release-apk
+          path: android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: android/app/build/outputs/apk/release/app-release.apk
+          tag_name: "v1.12.2-kusmus"
+          name: "Kusmus AI v1.12.2"
+          draft: false
+          prerelease: false
+          body: |
+            ## Kusmus AI Community Edition - Android APK
+            
+            Download and install `app-release.apk` on your Android device.
+            
+            **Note:** This is a debug-signed build for testing. For Play Store submission, configure release signing keys.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
