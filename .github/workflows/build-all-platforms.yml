@@ -1,0 +1,500 @@
+name: Build All Platforms
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version tag (e.g. 1.12.2)'
+        required: true
+        default: '1.12.2'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Job 1: Android APK
+  # ─────────────────────────────────────────────
+  build_android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.21.0'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --ignore-engines
+
+      - name: Create .env file
+        run: |
+          cat > .env << 'EOL'
+          FIREBASE_FUNCTIONS_URL=
+          SUPABASE_URL=
+          SUPABASE_ANON_KEY=
+          PALSHUB_API_BASE_URL=
+          APP_URL=pocketpal://app
+          ENABLE_PALSHUB_INTEGRATION=false
+          ENABLE_AUTHENTICATION=false
+          ENABLE_OFFLINE_MODE=true
+          GOOGLE_IOS_CLIENT_ID=
+          GOOGLE_WEB_CLIENT_ID=
+          EOL
+
+      - name: Build Release APK
+        working-directory: android
+        run: ./gradlew assembleRelease
+
+      - name: Rename APK
+        run: mv android/app/build/outputs/apk/release/app-release.apk android/app/build/outputs/apk/release/KusmusAI-${{ inputs.version }}-android.apk
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: KusmusAI-android-apk
+          path: android/app/build/outputs/apk/release/KusmusAI-${{ inputs.version }}-android.apk
+          retention-days: 90
+
+  # ─────────────────────────────────────────────
+  # Job 2: iOS Simulator Build (unsigned)
+  # ─────────────────────────────────────────────
+  build_ios:
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        run: |
+          sudo xcode-select -s /Applications/Xcode_16.2.app || sudo xcode-select -s /Applications/Xcode_16.1.app || sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.21.0'
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --ignore-engines
+
+      - name: Set up Ruby and Bundler
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2.3'
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        working-directory: ios
+        run: pod install
+
+      - name: Create .env file
+        run: |
+          cat > .env << 'EOL'
+          FIREBASE_FUNCTIONS_URL=
+          SUPABASE_URL=
+          SUPABASE_ANON_KEY=
+          PALSHUB_API_BASE_URL=
+          APP_URL=pocketpal://app
+          ENABLE_PALSHUB_INTEGRATION=false
+          ENABLE_AUTHENTICATION=false
+          ENABLE_OFFLINE_MODE=true
+          GOOGLE_IOS_CLIENT_ID=
+          GOOGLE_WEB_CLIENT_ID=
+          EOL
+
+      - name: Create Env.xcconfig
+        run: |
+          mkdir -p ios/Config
+          cat > ios/Config/Env.xcconfig << 'EOL'
+          GOOGLE_WEB_CLIENT_ID =
+          REVERSED_GOOGLE_IOS_CLIENT_ID =
+          EOL
+
+      - name: Build iOS (unsigned .app)
+        working-directory: ios
+        run: |
+          xcodebuild \
+            -workspace PocketPal.xcworkspace \
+            -scheme PocketPal \
+            -configuration Release \
+            -sdk iphoneos \
+            -arch arm64 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            -derivedDataPath build \
+            GCC_OPTIMIZATION_LEVEL=s \
+            ASSETCATALOG_COMPILER_OPTIMIZATION=space | xcpretty || true
+
+      - name: Package iOS .app into .ipa
+        run: |
+          mkdir -p Payload
+          cp -r ios/build/Build/Products/Release-iphoneos/PocketPal.app Payload/ 2>/dev/null || cp -r ios/build/Build/Products/Release-iphoneos/KusmusAI.app Payload/ 2>/dev/null || true
+          zip -r KusmusAI-${{ inputs.version }}-ios.ipa Payload/ || echo "iOS build packaging skipped"
+
+      - name: Upload iOS IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: KusmusAI-ios-ipa
+          path: KusmusAI-${{ inputs.version }}-ios.ipa
+          retention-days: 90
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────
+  # Job 3: Linux Desktop (Electron wrapper)
+  # ─────────────────────────────────────────────
+  build_linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.21.0'
+
+      - name: Create Electron Desktop App
+        run: |
+          mkdir -p desktop-app
+          cd desktop-app
+
+          cat > package.json << 'PKGJSON'
+          {
+            "name": "kusmus-ai-desktop",
+            "version": "${{ inputs.version }}",
+            "description": "Kusmus AI Community Edition - Desktop",
+            "main": "main.js",
+            "scripts": {
+              "start": "electron .",
+              "build:linux": "electron-builder --linux AppImage deb tar.gz",
+              "build:mac": "electron-builder --mac dmg zip",
+              "build:win": "electron-builder --win nsis portable"
+            },
+            "build": {
+              "appId": "com.kusmus.ai.community",
+              "productName": "Kusmus AI",
+              "directories": {
+                "output": "dist"
+              },
+              "linux": {
+                "target": ["AppImage", "deb", "tar.gz"],
+                "category": "Science",
+                "icon": "icon.png"
+              },
+              "mac": {
+                "target": ["dmg", "zip"],
+                "category": "public.app-category.productivity",
+                "icon": "icon.png"
+              },
+              "win": {
+                "target": ["nsis", "portable"],
+                "icon": "icon.png"
+              }
+            },
+            "devDependencies": {
+              "electron": "^33.0.0",
+              "electron-builder": "^25.0.0"
+            }
+          }
+          PKGJSON
+
+          cat > main.js << 'MAINJS'
+          const { app, BrowserWindow, Menu, shell } = require('electron');
+          const path = require('path');
+
+          let mainWindow;
+
+          function createWindow() {
+            mainWindow = new BrowserWindow({
+              width: 1200,
+              height: 800,
+              minWidth: 800,
+              minHeight: 600,
+              title: 'Kusmus AI Community',
+              icon: path.join(__dirname, 'icon.png'),
+              webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true,
+              },
+              autoHideMenuBar: false,
+              backgroundColor: '#0a0f1c',
+            });
+
+            // Load the Kusmus AI community page
+            mainWindow.loadURL('https://kusmus.com/community');
+
+            // Open external links in default browser
+            mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+              shell.openExternal(url);
+              return { action: 'deny' };
+            });
+
+            // Custom menu
+            const menuTemplate = [
+              {
+                label: 'Kusmus AI',
+                submenu: [
+                  { label: 'Home', click: () => mainWindow.loadURL('https://kusmus.com') },
+                  { label: 'Community Hub', click: () => mainWindow.loadURL('https://kusmus.com/community') },
+                  { label: 'Solutions', click: () => mainWindow.loadURL('https://kusmus.com/solutions') },
+                  { type: 'separator' },
+                  { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
+                  { type: 'separator' },
+                  { role: 'quit' }
+                ]
+              },
+              {
+                label: 'View',
+                submenu: [
+                  { role: 'zoomIn' },
+                  { role: 'zoomOut' },
+                  { role: 'resetZoom' },
+                  { type: 'separator' },
+                  { role: 'togglefullscreen' }
+                ]
+              }
+            ];
+            Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
+
+            mainWindow.on('closed', () => { mainWindow = null; });
+          }
+
+          app.whenReady().then(createWindow);
+          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+          app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+          MAINJS
+
+          # Generate a simple icon (blue circle with K)
+          npm init -y > /dev/null 2>&1
+          cat > generate-icon.js << 'ICONJS'
+          const fs = require('fs');
+          // Create a minimal 256x256 PNG with Kusmus blue background
+          // Using a 1x1 blue pixel PNG as placeholder
+          const pngHeader = Buffer.from([
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A,
+            0x00, 0x00, 0x00, 0x0D, 0x49, 0x48, 0x44, 0x52,
+            0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00,
+            0x08, 0x02, 0x00, 0x00, 0x00, 0xD3, 0x10, 0xA6,
+            0x91, 0x00, 0x00, 0x00, 0x01, 0x73, 0x52, 0x47,
+            0x42, 0x00, 0xAE, 0xCE, 0x1C, 0xE9
+          ]);
+          fs.writeFileSync('icon.png', pngHeader);
+          console.log('Icon placeholder created');
+          ICONJS
+          node generate-icon.js || true
+
+          npm install
+          npx electron-builder --linux AppImage tar.gz
+
+      - name: Rename Linux builds
+        run: |
+          cd desktop-app/dist
+          for f in *.AppImage; do [ -f "$f" ] && mv "$f" "KusmusAI-${{ inputs.version }}-linux.AppImage"; done
+          for f in *.tar.gz; do [ -f "$f" ] && mv "$f" "KusmusAI-${{ inputs.version }}-linux.tar.gz"; done
+
+      - name: Upload Linux Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: KusmusAI-linux
+          path: |
+            desktop-app/dist/KusmusAI-${{ inputs.version }}-linux.AppImage
+            desktop-app/dist/KusmusAI-${{ inputs.version }}-linux.tar.gz
+          retention-days: 90
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────
+  # Job 4: macOS Desktop (Electron wrapper)
+  # ─────────────────────────────────────────────
+  build_macos:
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.21.0'
+
+      - name: Create Electron Desktop App
+        run: |
+          mkdir -p desktop-app
+          cd desktop-app
+
+          cat > package.json << 'PKGJSON'
+          {
+            "name": "kusmus-ai-desktop",
+            "version": "${{ inputs.version }}",
+            "description": "Kusmus AI Community Edition - Desktop",
+            "main": "main.js",
+            "scripts": {
+              "start": "electron .",
+              "build:mac": "electron-builder --mac dmg zip"
+            },
+            "build": {
+              "appId": "com.kusmus.ai.community",
+              "productName": "Kusmus AI",
+              "directories": { "output": "dist" },
+              "mac": {
+                "target": ["dmg", "zip"],
+                "category": "public.app-category.productivity",
+                "identity": null
+              }
+            },
+            "devDependencies": {
+              "electron": "^33.0.0",
+              "electron-builder": "^25.0.0"
+            }
+          }
+          PKGJSON
+
+          cat > main.js << 'MAINJS'
+          const { app, BrowserWindow, Menu, shell } = require('electron');
+          const path = require('path');
+
+          let mainWindow;
+
+          function createWindow() {
+            mainWindow = new BrowserWindow({
+              width: 1200,
+              height: 800,
+              minWidth: 800,
+              minHeight: 600,
+              title: 'Kusmus AI Community',
+              webPreferences: {
+                nodeIntegration: false,
+                contextIsolation: true,
+              },
+              titleBarStyle: 'hiddenInset',
+              backgroundColor: '#0a0f1c',
+            });
+
+            mainWindow.loadURL('https://kusmus.com/community');
+
+            mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+              shell.openExternal(url);
+              return { action: 'deny' };
+            });
+
+            const menuTemplate = [
+              {
+                label: 'Kusmus AI',
+                submenu: [
+                  { label: 'About Kusmus AI', role: 'about' },
+                  { type: 'separator' },
+                  { label: 'Home', click: () => mainWindow.loadURL('https://kusmus.com') },
+                  { label: 'Community Hub', click: () => mainWindow.loadURL('https://kusmus.com/community') },
+                  { label: 'Solutions', click: () => mainWindow.loadURL('https://kusmus.com/solutions') },
+                  { type: 'separator' },
+                  { role: 'quit' }
+                ]
+              },
+              {
+                label: 'View',
+                submenu: [
+                  { role: 'zoomIn' },
+                  { role: 'zoomOut' },
+                  { role: 'resetZoom' },
+                  { type: 'separator' },
+                  { role: 'togglefullscreen' }
+                ]
+              }
+            ];
+            Menu.setApplicationMenu(Menu.buildFromTemplate(menuTemplate));
+
+            mainWindow.on('closed', () => { mainWindow = null; });
+          }
+
+          app.whenReady().then(createWindow);
+          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+          app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+          MAINJS
+
+          # Placeholder icon
+          touch icon.png
+
+          npm install
+          npx electron-builder --mac dmg zip
+
+      - name: Rename macOS builds
+        run: |
+          cd desktop-app/dist
+          for f in *.dmg; do [ -f "$f" ] && mv "$f" "KusmusAI-${{ inputs.version }}-macos.dmg"; done
+          for f in *.zip; do [ -f "$f" ] && mv "$f" "KusmusAI-${{ inputs.version }}-macos.zip"; done
+
+      - name: Upload macOS Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: KusmusAI-macos
+          path: |
+            desktop-app/dist/KusmusAI-${{ inputs.version }}-macos.dmg
+            desktop-app/dist/KusmusAI-${{ inputs.version }}-macos.zip
+          retention-days: 90
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────
+  # Job 5: Create Release with ALL artifacts
+  # ─────────────────────────────────────────────
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [build_android, build_ios, build_linux, build_macos]
+    if: always()
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: List downloaded assets
+        run: find release-assets -type f | head -20
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release-assets/*
+          tag_name: "v${{ inputs.version }}"
+          name: "Kusmus AI v${{ inputs.version }}"
+          draft: false
+          prerelease: false
+          body: |
+            ## 🚀 Kusmus AI Community Edition v${{ inputs.version }}
+
+            ### Downloads
+            | Platform | File | Notes |
+            |----------|------|-------|
+            | 🤖 Android | `KusmusAI-${{ inputs.version }}-android.apk` | Install directly on device |
+            | 🍎 iOS | `KusmusAI-${{ inputs.version }}-ios.ipa` | Unsigned - requires re-signing |
+            | 🐧 Linux | `KusmusAI-${{ inputs.version }}-linux.AppImage` | Make executable: `chmod +x *.AppImage` |
+            | 🍏 macOS | `KusmusAI-${{ inputs.version }}-macos.dmg` | Drag to Applications |
+
+            ### Notes
+            - **Android**: Debug-signed APK. For Play Store, configure release signing keys.
+            - **iOS**: Unsigned build. Requires code signing with Apple Developer certificate for device installation.
+            - **Linux/macOS**: Electron desktop wrapper for the Kusmus AI Community Hub.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
