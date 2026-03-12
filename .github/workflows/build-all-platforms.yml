@@ -210,6 +210,7 @@ jobs:
       - name: Build iOS (unsigned)
         working-directory: ios
         run: |
+          set -o pipefail
           xcodebuild \
             -workspace PocketPal.xcworkspace \
             -scheme PocketPal \
@@ -220,9 +221,10 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             -derivedDataPath build \
+            OTHER_LDFLAGS="$(inherited) -Wl,-no_compact_unwind" \
             GCC_OPTIMIZATION_LEVEL=s \
             ASSETCATALOG_COMPILER_OPTIMIZATION=space \
-            COMPILER_INDEX_STORE_ENABLE=NO 2>&1 | tail -100
+            COMPILER_INDEX_STORE_ENABLE=NO | xcpretty || xcodebuild -workspace PocketPal.xcworkspace -scheme PocketPal -configuration Release -sdk iphoneos -arch arm64 CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" -derivedDataPath build
 
       - name: Package .ipa
         run: |
@@ -468,11 +470,118 @@ jobs:
           if-no-files-found: warn
 
   # ─────────────────────────────────────────────
+  # Job 5: Windows Desktop (Electron wrapper)
+  # ─────────────────────────────────────────────
+  build_windows:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '22.21.0'
+
+      - name: Create Electron Desktop App
+        env:
+          APP_VERSION: ${{ inputs.version }}
+        run: |
+          mkdir -p desktop-app
+          cd desktop-app
+
+          node -e "
+          const pkg = {
+            name: 'kusmus-ai-desktop',
+            version: process.env.APP_VERSION || '1.12.2',
+            description: 'Kusmus AI Community Edition - Desktop',
+            main: 'main.js',
+            scripts: { start: 'electron .' },
+            build: {
+              appId: 'com.kusmus.ai.community',
+              productName: 'Kusmus AI',
+              directories: { output: 'dist' },
+              win: {
+                target: ['nsis', 'portable']
+              }
+            },
+            devDependencies: {
+              electron: '^33.0.0',
+              'electron-builder': '^25.0.0'
+            }
+          };
+          require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+
+          cat > main.js << 'MAINJS'
+          const { app, BrowserWindow, Menu, shell } = require('electron');
+          const path = require('path');
+          let mainWindow;
+          function createWindow() {
+            mainWindow = new BrowserWindow({
+              width: 1200, height: 800,
+              minWidth: 800, minHeight: 600,
+              title: 'Kusmus AI Community',
+              webPreferences: { nodeIntegration: false, contextIsolation: true },
+              backgroundColor: '#0a0f1c',
+            });
+            mainWindow.loadURL('https://kusmus.com/community');
+            mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+              shell.openExternal(url);
+              return { action: 'deny' };
+            });
+            const menu = [
+              { label: 'Kusmus AI', submenu: [
+                { label: 'Home', click: () => mainWindow.loadURL('https://kusmus.com') },
+                { label: 'Community', click: () => mainWindow.loadURL('https://kusmus.com/community') },
+                { label: 'Solutions', click: () => mainWindow.loadURL('https://kusmus.com/solutions') },
+                { type: 'separator' },
+                { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
+                { type: 'separator' },
+                { role: 'quit' }
+              ]},
+              { label: 'View', submenu: [
+                { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'resetZoom' },
+                { type: 'separator' }, { role: 'togglefullscreen' }
+              ]}
+            ];
+            Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
+            mainWindow.on('closed', () => { mainWindow = null; });
+          }
+          app.whenReady().then(createWindow);
+          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
+          app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
+          MAINJS
+
+          npm install
+          npx electron-builder --win nsis portable
+
+      - name: Rename Windows builds
+        env:
+          APP_VERSION: ${{ inputs.version }}
+        run: |
+          cd desktop-app/dist
+          for f in *.exe; do [ -f "$f" ] && mv "$f" "KusmusAI-${APP_VERSION}-windows-setup.exe"; done
+          ls -la
+
+      - name: Upload Windows Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: KusmusAI-windows
+          path: |
+            desktop-app/dist/KusmusAI-*-windows-setup.exe
+          retention-days: 90
+          if-no-files-found: warn
+
+  # ─────────────────────────────────────────────
   # Job 5: Aggregate Release
   # ─────────────────────────────────────────────
   create_release:
     runs-on: ubuntu-latest
-    needs: [build_android, build_ios, build_linux, build_macos]
+    needs: [build_android, build_ios, build_linux, build_macos, build_windows]
     if: always()
     permissions:
       contents: write
@@ -512,6 +621,7 @@ jobs:
             | 🍎 iOS | `KusmusAI-${{ inputs.version }}-ios.ipa` | Unsigned — requires re-signing for devices |
             | 🐧 Linux | `KusmusAI-${{ inputs.version }}-linux.AppImage` | Make executable: `chmod +x *.AppImage` |
             | 🍏 macOS | `KusmusAI-${{ inputs.version }}-macos.dmg` | Drag to Applications |
+            | 🪟 Windows | `KusmusAI-${{ inputs.version }}-windows-setup.exe` | Run setup to install |
 
             ---
             _Debug-signed builds for testing. For store submission, configure signing keys._
