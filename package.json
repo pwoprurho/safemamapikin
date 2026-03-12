@@ -23,7 +23,11 @@
     "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
     "start": "react-native start",
     "start:reset": "react-native start --reset-cache",
-    "test": "jest"
+    "test": "jest",
+    "desktop:start": "cd desktop-app && yarn install && yarn start",
+    "desktop:build:linux": "cd desktop-app && yarn install && yarn build:linux",
+    "desktop:build:win": "cd desktop-app && yarn install && yarn build:win",
+    "desktop:build:mac": "cd desktop-app && yarn install && yarn build:mac"
   },
   "dependencies": {
     "@dr.pogodin/react-native-fs": "^2.36.0",

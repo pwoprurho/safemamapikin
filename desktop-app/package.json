@@ -1,0 +1,44 @@
+{
+  "name": "kusmus-ai-desktop",
+  "version": "1.12.3",
+  "description": "Kusmus AI Community Edition - Desktop with Local Ollama Support",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:linux": "electron-builder --linux AppImage tar.gz",
+    "build:win": "electron-builder --win nsis portable",
+    "build:mac": "electron-builder --mac dmg zip"
+  },
+  "build": {
+    "appId": "com.kusmus.ai.community",
+    "productName": "Kusmus AI",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.productivity",
+      "identity": null
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "category": "Science"
+    }
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

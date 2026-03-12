@@ -265,80 +265,14 @@ jobs:
         with:
           node-version: '22.21.0'
 
-      - name: Create Electron Desktop App
+      - name: Build Linux Desktop App
         env:
           APP_VERSION: ${{ inputs.version }}
         run: |
-          mkdir -p desktop-app
           cd desktop-app
-
-          # Write package.json using node to avoid interpolation issues
-          node -e "
-          const pkg = {
-            name: 'kusmus-ai-desktop',
-            version: process.env.APP_VERSION || '1.12.2',
-            description: 'Kusmus AI Community Edition - Desktop',
-            main: 'main.js',
-            scripts: { start: 'electron .' },
-            build: {
-              appId: 'com.kusmus.ai.community',
-              productName: 'Kusmus AI',
-              directories: { output: 'dist' },
-              linux: {
-                target: ['AppImage', 'tar.gz'],
-                category: 'Science'
-              }
-            },
-            devDependencies: {
-              electron: '^33.0.0',
-              'electron-builder': '^25.0.0'
-            }
-          };
-          require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          "
-
-          cat > main.js << 'MAINJS'
-          const { app, BrowserWindow, Menu, shell } = require('electron');
-          const path = require('path');
-          let mainWindow;
-          function createWindow() {
-            mainWindow = new BrowserWindow({
-              width: 1200, height: 800,
-              minWidth: 800, minHeight: 600,
-              title: 'Kusmus AI Community',
-              webPreferences: { nodeIntegration: false, contextIsolation: true },
-              backgroundColor: '#0a0f1c',
-            });
-            mainWindow.loadURL('https://kusmus.com/community');
-            mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-              shell.openExternal(url);
-              return { action: 'deny' };
-            });
-            const menu = [
-              { label: 'Kusmus AI', submenu: [
-                { label: 'Home', click: () => mainWindow.loadURL('https://kusmus.com') },
-                { label: 'Community', click: () => mainWindow.loadURL('https://kusmus.com/community') },
-                { label: 'Solutions', click: () => mainWindow.loadURL('https://kusmus.com/solutions') },
-                { type: 'separator' },
-                { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
-                { type: 'separator' },
-                { role: 'quit' }
-              ]},
-              { label: 'View', submenu: [
-                { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'resetZoom' },
-                { type: 'separator' }, { role: 'togglefullscreen' }
-              ]}
-            ];
-            Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
-            mainWindow.on('closed', () => { mainWindow = null; });
-          }
-          app.whenReady().then(createWindow);
-          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-          app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
-          MAINJS
-
+          node -e "const pkg=require('./package.json'); pkg.version=process.env.APP_VERSION; require('fs').writeFileSync('package.json', JSON.stringify(pkg,null,2));"
           npm install
-          npx electron-builder --linux AppImage tar.gz
+          npm run build:linux
 
       - name: Rename Linux builds
         env:
@@ -375,81 +309,14 @@ jobs:
         with:
           node-version: '22.21.0'
 
-      - name: Create Electron Desktop App
+      - name: Build macOS Desktop App
         env:
           APP_VERSION: ${{ inputs.version }}
         run: |
-          mkdir -p desktop-app
           cd desktop-app
-
-          node -e "
-          const pkg = {
-            name: 'kusmus-ai-desktop',
-            version: process.env.APP_VERSION || '1.12.2',
-            description: 'Kusmus AI Community Edition - Desktop',
-            main: 'main.js',
-            scripts: { start: 'electron .' },
-            build: {
-              appId: 'com.kusmus.ai.community',
-              productName: 'Kusmus AI',
-              directories: { output: 'dist' },
-              mac: {
-                target: ['dmg', 'zip'],
-                category: 'public.app-category.productivity',
-                identity: null
-              }
-            },
-            devDependencies: {
-              electron: '^33.0.0',
-              'electron-builder': '^25.0.0'
-            }
-          };
-          require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          "
-
-          cat > main.js << 'MAINJS'
-          const { app, BrowserWindow, Menu, shell } = require('electron');
-          const path = require('path');
-          let mainWindow;
-          function createWindow() {
-            mainWindow = new BrowserWindow({
-              width: 1200, height: 800,
-              minWidth: 800, minHeight: 600,
-              title: 'Kusmus AI Community',
-              webPreferences: { nodeIntegration: false, contextIsolation: true },
-              titleBarStyle: 'hiddenInset',
-              backgroundColor: '#0a0f1c',
-            });
-            mainWindow.loadURL('https://kusmus.com/community');
-            mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-              shell.openExternal(url);
-              return { action: 'deny' };
-            });
-            const menu = [
-              { label: 'Kusmus AI', submenu: [
-                { label: 'About', role: 'about' },
-                { type: 'separator' },
-                { label: 'Home', click: () => mainWindow.loadURL('https://kusmus.com') },
-                { label: 'Community', click: () => mainWindow.loadURL('https://kusmus.com/community') },
-                { label: 'Solutions', click: () => mainWindow.loadURL('https://kusmus.com/solutions') },
-                { type: 'separator' },
-                { role: 'quit' }
-              ]},
-              { label: 'View', submenu: [
-                { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'resetZoom' },
-                { type: 'separator' }, { role: 'togglefullscreen' }
-              ]}
-            ];
-            Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
-            mainWindow.on('closed', () => { mainWindow = null; });
-          }
-          app.whenReady().then(createWindow);
-          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-          app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
-          MAINJS
-
+          node -e "const pkg=require('./package.json'); pkg.version=process.env.APP_VERSION; require('fs').writeFileSync('package.json', JSON.stringify(pkg,null,2));"
           npm install
-          npx electron-builder --mac dmg zip
+          npm run build:mac
 
       - name: Rename macOS builds
         env:
@@ -486,78 +353,14 @@ jobs:
         with:
           node-version: '22.21.0'
 
-      - name: Create Electron Desktop App
+      - name: Build Windows Desktop App
         env:
           APP_VERSION: ${{ inputs.version }}
         run: |
-          mkdir -p desktop-app
           cd desktop-app
-
-          node -e "
-          const pkg = {
-            name: 'kusmus-ai-desktop',
-            version: process.env.APP_VERSION || '1.12.2',
-            description: 'Kusmus AI Community Edition - Desktop',
-            main: 'main.js',
-            scripts: { start: 'electron .' },
-            build: {
-              appId: 'com.kusmus.ai.community',
-              productName: 'Kusmus AI',
-              directories: { output: 'dist' },
-              win: {
-                target: ['nsis', 'portable']
-              }
-            },
-            devDependencies: {
-              electron: '^33.0.0',
-              'electron-builder': '^25.0.0'
-            }
-          };
-          require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-          "
-
-          cat > main.js << 'MAINJS'
-          const { app, BrowserWindow, Menu, shell } = require('electron');
-          const path = require('path');
-          let mainWindow;
-          function createWindow() {
-            mainWindow = new BrowserWindow({
-              width: 1200, height: 800,
-              minWidth: 800, minHeight: 600,
-              title: 'Kusmus AI Community',
-              webPreferences: { nodeIntegration: false, contextIsolation: true },
-              backgroundColor: '#0a0f1c',
-            });
-            mainWindow.loadURL('https://kusmus.com/community');
-            mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-              shell.openExternal(url);
-              return { action: 'deny' };
-            });
-            const menu = [
-              { label: 'Kusmus AI', submenu: [
-                { label: 'Home', click: () => mainWindow.loadURL('https://kusmus.com') },
-                { label: 'Community', click: () => mainWindow.loadURL('https://kusmus.com/community') },
-                { label: 'Solutions', click: () => mainWindow.loadURL('https://kusmus.com/solutions') },
-                { type: 'separator' },
-                { label: 'Reload', accelerator: 'CmdOrCtrl+R', click: () => mainWindow.reload() },
-                { type: 'separator' },
-                { role: 'quit' }
-              ]},
-              { label: 'View', submenu: [
-                { role: 'zoomIn' }, { role: 'zoomOut' }, { role: 'resetZoom' },
-                { type: 'separator' }, { role: 'togglefullscreen' }
-              ]}
-            ];
-            Menu.setApplicationMenu(Menu.buildFromTemplate(menu));
-            mainWindow.on('closed', () => { mainWindow = null; });
-          }
-          app.whenReady().then(createWindow);
-          app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
-          app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
-          MAINJS
-
+          node -e "const pkg=require('./package.json'); pkg.version=process.env.APP_VERSION; require('fs').writeFileSync('package.json', JSON.stringify(pkg,null,2));"
           npm install
-          npx electron-builder --win nsis portable
+          npm run build:win
 
       - name: Rename Windows builds
         env:
