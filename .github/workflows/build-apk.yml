@@ -14,19 +14,46 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22.21.0'
           cache: 'yarn'
 
+      - name: Install Yarn
+        run: npm install -g yarn
+
       - name: Install dependencies
-        run: yarn install --ignore-engines
+        run: yarn install
+
+      - name: Create google-services.json
+        run: |
+          cat > android/app/google-services.json << 'EOL'
+          {
+            "project_info": {
+              "project_number": "000000000000",
+              "project_id": "kusbots-ci",
+              "storage_bucket": "kusbots-ci.appspot.com"
+            },
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:000000000000:android:0000000000000000",
+                "android_client_info": {
+                  "package_name": "com.kusbots"
+                }
+              },
+              "api_key": [{
+                "current_key": "dummy-api-key-for-ci-builds"
+              }]
+            }]
+          }
+          EOL
 
       - name: Create .env file
         run: |
@@ -35,7 +62,7 @@ jobs:
           SUPABASE_URL=
           SUPABASE_ANON_KEY=
           PALSHUB_API_BASE_URL=
-          APP_URL=pocketpal://app
+          APP_URL=kusbots://app
           ENABLE_PALSHUB_INTEGRATION=false
           ENABLE_AUTHENTICATION=false
           ENABLE_OFFLINE_MODE=true
@@ -43,8 +70,25 @@ jobs:
           GOOGLE_WEB_CLIENT_ID=
           EOL
 
+      - name: Create release keystore
+        working-directory: android/app
+        run: |
+          keytool -genkeypair -v \
+            -storetype PKCS12 \
+            -keystore pocketpal-release-key.keystore \
+            -alias kusbots_key_alias \
+            -keyalg RSA \
+            -keysize 2048 \
+            -validity 10000 \
+            -storepass ci-build-password \
+            -keypass ci-build-password \
+            -dname "CN=kus_bots CI, OU=CI, O=kusbots, L=CI, S=CI, C=US"
+
       - name: Build Release APK
         working-directory: android
+        env:
+          APP_RELEASE_STORE_PASSWORD: ci-build-password
+          APP_RELEASE_KEY_PASSWORD: ci-build-password
         run: |
           chmod +x gradlew
           ./gradlew assembleRelease
@@ -52,7 +96,7 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: kusmus-ai-release-apk
+          name: kus-bots-release-apk
           path: android/app/build/outputs/apk/release/app-release.apk
           retention-days: 90
 
@@ -60,15 +104,15 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: android/app/build/outputs/apk/release/app-release.apk
-          tag_name: "v1.12.2-kusmus"
-          name: "Kusmus AI v1.12.2"
+          tag_name: "v1.12.3-kusbots"
+          name: "kus_bots v1.12.3"
           draft: false
           prerelease: false
           body: |
-            ## Kusmus AI Community Edition - Android APK
+            ## kus_bots Community Edition - Android APK
             
             Download and install `app-release.apk` on your Android device.
             
-            **Note:** This is a debug-signed build for testing. For Play Store submission, configure release signing keys.
+            **Note:** This is a CI-signed build for testing.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
