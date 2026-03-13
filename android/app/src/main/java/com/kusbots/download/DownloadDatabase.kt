@@ -1,4 +1,4 @@
-package com.pocketpal.download
+package com.kusbots.download
 
 import android.content.Context
 import androidx.room.Database
