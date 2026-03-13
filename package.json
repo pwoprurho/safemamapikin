@@ -1,6 +1,6 @@
 {
   "name": "kus_bots",
-  "version": "1.12.3",
+  "version": "1.12.4",
   "private": true,
   "scripts": {
     "prepare": "husky",

@@ -90,8 +90,8 @@ android {
         applicationId "com.kusbots"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 133 
-        versionName "1.12.3"
+        versionCode 134 
+        versionName "1.12.4"
         ndk {
             abiFilters "arm64-v8a", "x86_64"
         }
