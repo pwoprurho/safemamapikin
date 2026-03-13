@@ -1,14 +1,14 @@
-import React, { useContext } from 'react';
-import { Image, View } from 'react-native';
-import { Button, Text } from 'react-native-paper';
-import { observer } from 'mobx-react';
+import React, {useContext} from 'react';
+import {Image, View} from 'react-native';
+import {Button, Text} from 'react-native-paper';
+import {observer} from 'mobx-react';
 
-import { useTheme } from '../../hooks';
-import { createStyles } from './styles';
-import { modelStore } from '../../store';
-import { useNavigation } from '@react-navigation/native';
-import { NavigationProp } from '@react-navigation/native';
-import { L10nContext } from '../../utils';
+import {useTheme} from '../../hooks';
+import {createStyles} from './styles';
+import {modelStore} from '../../store';
+import {useNavigation} from '@react-navigation/native';
+import {NavigationProp} from '@react-navigation/native';
+import {L10nContext} from '../../utils';
 
 interface ChatEmptyPlaceholderProps {
   onSelectModel: () => void;
@@ -16,11 +16,11 @@ interface ChatEmptyPlaceholderProps {
 }
 
 export const ChatEmptyPlaceholder = observer(
-  ({ onSelectModel, bottomComponentHeight }: ChatEmptyPlaceholderProps) => {
+  ({onSelectModel, bottomComponentHeight}: ChatEmptyPlaceholderProps) => {
     const theme = useTheme();
     const navigation = useNavigation<NavigationProp<any>>();
     const l10n = useContext(L10nContext);
-    const styles = createStyles({ theme });
+    const styles = createStyles({theme});
 
     const hasAvailableModels = modelStore.availableModels.length > 0;
     const hasActiveModel = modelStore.activeModelId !== undefined;
@@ -46,16 +46,16 @@ export const ChatEmptyPlaceholder = observer(
       };
     };
 
-    const { title, description, buttonText, onPress } = getContent();
+    const {title, description, buttonText, onPress} = getContent();
 
     if (hasActiveModel) {
       return <View />;
     }
     return (
       <View
-        style={[styles.container, { marginBottom: bottomComponentHeight + 100 }]}>
+        style={[styles.container, {marginBottom: bottomComponentHeight + 100}]}>
         <Image
-          source={require('../../assets/Kusmus AI-dark-v2.png')}
+          source={require('../../assets/pocketpal-dark-v2.png')}
           style={styles.logo}
           resizeMode="contain"
         />

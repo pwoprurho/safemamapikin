@@ -405,7 +405,7 @@
     "screenTitle": "App Info",
     "description": "An app that brings language models directly to your phone. Sits on the shoulders of llama.cpp and llama.rn.",
     "supportProject": "Support the Project",
-    "supportProjectDescription": "If you enjoy using Kusmus AI, please consider supporting the project by:",
+    "supportProjectDescription": "If you enjoy using kus_bots, please consider supporting the project by:",
     "githubButton": "Star on GitHub",
     "orText": "or",
     "orBy": "or by",
@@ -415,10 +415,10 @@
   },
   "feedback": {
     "title": "Send Feedback",
-    "description": "Your voice matters! Tell us how Kusmus AI is helping you and what we can do to make it even more useful.",
+    "description": "Your voice matters! Tell us how kus_bots is helping you and what we can do to make it even more useful.",
     "shareThoughtsButton": "Sharing your thoughts",
     "useCase": {
-      "label": "What are you using Kusmus AI for?",
+      "label": "What are you using kus_bots for?",
       "placeholder": "e.g., summarization, roleplay, etc."
     },
     "featureRequests": {
@@ -430,7 +430,7 @@
       "placeholder": "Share any other thoughts you may have."
     },
     "usageFrequency": {
-      "label": "How often do you use Kusmus AI? (Optional)",
+      "label": "How often do you use kus_bots? (Optional)",
       "options": {
         "daily": "Daily",
         "weekly": "Weekly",
@@ -483,7 +483,7 @@
     },
     "chatEmptyPlaceholder": {
       "noModelsTitle": "No Models Available",
-      "noModelsDescription": "Download a model to start chatting with Kusmus AI",
+      "noModelsDescription": "Download a model to start chatting with kus_bots",
       "noModelsButton": "Download Model",
       "activateModelTitle": "Activate Model To Get Started",
       "activateModelDescription": "Select the model and download it. After downloading, tap Load next to the model and start chatting.",
@@ -533,7 +533,7 @@
     },
     "modelErrorReportSheet": {
       "title": "Report Model Loading Issue",
-      "privacyNote": "Help us improve PocketPal by sharing details about this error. Review below what will be shared - you can deselect any items you prefer not to include.",
+      "privacyNote": "Help us improve kus_bots by sharing details about this error. Review below what will be shared - you can deselect any items you prefer not to include.",
       "errorMessage": "Error message",
       "modelInfo": "Model Information",
       "modelName": "Name",
@@ -551,7 +551,7 @@
       "submit": "Submit Report",
       "success": {
         "title": "Report Submitted",
-        "message": "Thank you for helping us improve PocketPal. Your report will help us fix this issue."
+        "message": "Thank you for helping us improve kus_bots. Your report will help us fix this issue."
       },
       "error": {
         "title": "Report Failed",

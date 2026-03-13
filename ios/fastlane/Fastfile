@@ -42,13 +42,13 @@ platform :ios do
     )
 
     build_ios_app(
-      scheme: "PocketPal",
+      scheme: "kus_bots",
       export_method: "app-store",
       output_directory: "./build",
       clean: true,
       export_options: {
         provisioningProfiles: {
-          "ai.pocketpal" => "match AppStore ai.pocketpal"
+          "com.kusbots" => "match AppStore com.kusbots"
         },
         signingStyle: "manual"
       }
@@ -125,14 +125,14 @@ platform :ios do
     )
 
     build_ios_app(
-      scheme: "PocketPal",
+      scheme: "kus_bots",
       export_method: "development",
       output_directory: "./build",
-      output_name: "PocketPal.ipa",
+      output_name: "kus_bots.ipa",
       clean: true,
       export_options: {
         provisioningProfiles: {
-          "ai.pocketpal" => "match Development ai.pocketpal"
+          "com.kusbots" => "match Development com.kusbots"
         },
         signingStyle: "manual"
       }

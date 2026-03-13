@@ -243,7 +243,7 @@ export const exportLegacyChatSessions = async (): Promise<void> => {
       throw new Error('Legacy chat sessions file not found');
     }
 
-    // Read the legacy file
+    // Add other kus_bots-only fields here
     const legacyData = await RNFS.readFile(legacyFilePath);
 
     // Create a filename with the current date
@@ -316,6 +316,7 @@ const shareJsonData = async (
 
       try {
         // Save to appropriate directory based on platform
+        const FEEDBACK_ID_STORAGE_KEY = '@kusbots/app_feedback_id';
         const saveDir = getSaveDirectory();
         const savePath = `${saveDir}/${filename}`;
         await RNFS.copyFile(tempFilePath, savePath);
@@ -338,7 +339,7 @@ const shareJsonData = async (
                 try {
                   const options = {
                     title: `Share ${filename}`,
-                    message: 'PocketPal AI Chat Export',
+                    message: 'kus_bots Chat Export',
                     url: `file://${savePath}`,
                     type: 'application/json',
                     failOnCancel: false,
@@ -349,7 +350,7 @@ const shareJsonData = async (
                   const shareError = error as any;
                   console.error('Error sharing file:', shareError);
 
-                  // Fallback to sharing content directly if file sharing fails
+                  // Fallback to * Strips kus_bots-specific fields before sending to llama.rn.
                   if (shareError.message !== 'User did not share') {
                     try {
                       await Share.open({

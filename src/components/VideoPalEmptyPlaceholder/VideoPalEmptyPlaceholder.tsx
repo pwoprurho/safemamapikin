@@ -1,27 +1,27 @@
-import React, { useContext } from 'react';
-import { Image, View } from 'react-native';
-import { Text } from 'react-native-paper';
-import { observer } from 'mobx-react';
+import React, {useContext} from 'react';
+import {Image, View} from 'react-native';
+import {Text} from 'react-native-paper';
+import {observer} from 'mobx-react';
 
-import { useTheme } from '../../hooks';
-import { createStyles } from './styles';
-import { L10nContext } from '../../utils';
+import {useTheme} from '../../hooks';
+import {createStyles} from './styles';
+import {L10nContext} from '../../utils';
 
 interface VideoPalEmptyPlaceholderProps {
   bottomComponentHeight: number;
 }
 
 export const VideoPalEmptyPlaceholder = observer(
-  ({ bottomComponentHeight }: VideoPalEmptyPlaceholderProps) => {
+  ({bottomComponentHeight}: VideoPalEmptyPlaceholderProps) => {
     const theme = useTheme();
     const l10n = useContext(L10nContext);
-    const styles = createStyles({ theme });
+    const styles = createStyles({theme});
 
     return (
       <View
-        style={[styles.container, { paddingBottom: bottomComponentHeight + 20 }]}>
+        style={[styles.container, {paddingBottom: bottomComponentHeight + 20}]}>
         <Image
-          source={require('../../assets/Kusmus AI-dark-v2.png')}
+          source={require('../../assets/pocketpal-dark-v2.png')}
           style={styles.logo}
           resizeMode="contain"
         />

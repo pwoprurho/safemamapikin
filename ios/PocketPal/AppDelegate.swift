@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     window = UIWindow(frame: UIScreen.main.bounds)
 
     factory.startReactNative(
-      withModuleName: "PocketPal",
+      withModuleName: "kus_bots",
       in: window,
       launchOptions: launchOptions
     )
@@ -48,7 +48,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     options: [UIApplication.OpenURLOptionsKey : Any] = [:]
   ) -> Bool {
     // Handle deep links from Shortcuts
-    if url.scheme == "pocketpal" {
+    if url.scheme == "kusbots" {
       NotificationCenter.default.post(
         name: NSNotification.Name("RCTOpenURLNotification"),
         object: nil,

@@ -1,4 +1,4 @@
-package com.pocketpal
+package com.kusbots
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -11,9 +11,9 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
-import com.pocketpal.KeepAwakePackage
-import com.pocketpal.HardwareInfoPackage
-import com.pocketpal.download.DownloadPackage
+import com.kusbots.KeepAwakePackage
+import com.kusbots.HardwareInfoPackage
+import com.kusbots.download.DownloadPackage
 
 class MainApplication : Application(), ReactApplication {
 

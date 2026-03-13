@@ -94,5 +94,3 @@ e2e/testspec-*-allmodels.yml
 # E2E pipeline
 e2e/devices.json
 e2e/reports/
-android/build_output.log
-yarn_install.log

@@ -1,5 +1,5 @@
 {
-  "name": "kusmus-ai",
+  "name": "kus_bots",
   "version": "1.12.2",
   "private": true,
   "scripts": {
@@ -23,11 +23,7 @@
     "format": "prettier --write \"**/*.{js,ts,tsx,json,md}\"",
     "start": "react-native start",
     "start:reset": "react-native start --reset-cache",
-    "test": "jest",
-    "desktop:start": "cd desktop-app && yarn install && yarn start",
-    "desktop:build:linux": "cd desktop-app && yarn install && yarn build:linux",
-    "desktop:build:win": "cd desktop-app && yarn install && yarn build:win",
-    "desktop:build:mac": "cd desktop-app && yarn install && yarn build:mac"
+    "test": "jest"
   },
   "dependencies": {
     "@dr.pogodin/react-native-fs": "^2.36.0",
@@ -131,11 +127,11 @@
   },
   "packageManager": "yarn@1.22.22",
   "codegenConfig": {
-    "name": "PocketPalSpecs",
+    "name": "kus_bots_specs",
     "type": "all",
     "jsSrcsDir": "src/specs",
     "android": {
-      "javaPackageName": "com.pocketpal.specs"
+      "javaPackageName": "com.kusbots.specs"
     }
   }
 }

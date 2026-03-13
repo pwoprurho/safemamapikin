@@ -1,12 +1,12 @@
-# Kusmus AI 📱🚀
+# PocketPal AI 📱🚀
 
-Kusmus AI is a pocket-sized AI assistant powered by small language models (SLMs) that run directly on your phone. Designed for both iOS and Android, Kusmus AI lets you interact with various SLMs without the need for an internet connection. Your privacy is fully protected as all processing happens entirely on-device — your conversations, prompts, and data never leave your phone or get stored on external servers.
+PocketPal AI is a pocket-sized AI assistant powered by small language models (SLMs) that run directly on your phone. Designed for both iOS and Android, PocketPal AI lets you interact with various SLMs without the need for an internet connection. Your privacy is fully protected as all processing happens entirely on-device — your conversations, prompts, and data never leave your phone or get stored on external servers.
 
 > **Note on Privacy**: The only data that may leave your device is what you explicitly choose to share: benchmark results (if you opt to contribute to the leaderboard) and any feedback you voluntarily submit through the app.
 
 ## Table of Contents
 
-- [Kusmus AI 📱🚀](#pocketpal-ai-)
+- [PocketPal AI 📱🚀](#pocketpal-ai-)
   - [Table of Contents](#table-of-contents)
   - [📰 News & Announcements](#-news--announcements)
   - [Features](#features)
@@ -36,12 +36,12 @@ Kusmus AI is a pocket-sized AI assistant powered by small language models (SLMs)
 
 ## 📰 News & Announcements
 - **🔒 HF Token Authentication (v1.9.0, Apr, 2025)**: Access gated models from Hugging Face with your authentication token.
-- **🌐 Localization Support (v1.8.16, Apr, 2025)**: Kusmus AI now supports multiple languages (At the moment Japanese and Chinese).
+- **🌐 Localization Support (v1.8.16, Apr, 2025)**: PocketPal AI now supports multiple languages (At the moment Japanese and Chinese).
 - **📱 iPad Support (v1.8.12, Mar, 2025)**: Full support for iPad devices including landscape orientation.
 - **👤 Pals Feature (v1.8.0, Feb, 2025)**: Create and chat with personalized AI assistants with different personalities.
 - **🔍 Benchmarking Tool (v1.6.1, 2024)**: Test and compare model performance with the built-in benchmarking feature.
-- **🎨 New Icon Alert (Nov 2024)**: Kusmus AI has a fresh new look! Huge thanks to **[Chun Te Lee](https://github.com/Reeray)** for the design! [Read more](https://github.com/a-ghorbani/pocketpal-ai/discussions/102).
-- **🚀 Hugging Face Public Hub Integration (v1.5, Nov 2024)**: Kusmus AI now integrates with the Hugging Face model Hub! Browse, download, and run models directly from the Hugging Face Hub within the app. [Read more](https://github.com/a-ghorbani/pocketpal-ai/discussions/104)
+- **🎨 New Icon Alert (Nov 2024)**: PocketPal AI has a fresh new look! Huge thanks to **[Chun Te Lee](https://github.com/Reeray)** for the design! [Read more](https://github.com/a-ghorbani/pocketpal-ai/discussions/102).
+- **🚀 Hugging Face Public Hub Integration (v1.5, Nov 2024)**: PocketPal AI now integrates with the Hugging Face model Hub! Browse, download, and run models directly from the Hugging Face Hub within the app. [Read more](https://github.com/a-ghorbani/pocketpal-ai/discussions/104)
 
 ## Features
 
@@ -62,13 +62,13 @@ Kusmus AI is a pocket-sized AI assistant powered by small language models (SLMs)
 
 ### iOS
 
-Download Kusmus AI from the App Store:
+Download PocketPal AI from the App Store:
 
 [**Download on the App Store**](https://apps.apple.com/us/app/pocketpal-ai/id6502579498)
 
 ### Android
 
-Get Kusmus AI on Google Play:
+Get PocketPal AI on Google Play:
 
 [**Get it on Google Play**](https://play.google.com/store/apps/details?id=com.pocketpalai)
 
@@ -142,7 +142,7 @@ Get Kusmus AI on Google Play:
 1. Navigate to the Benchmarking page.
 2. Run performance tests on your models to compare speed and efficiency.
 3. View detailed metrics like tokens per second and memory usage.
-4. Share your benchmark results and compare with other devices on the [Kusmus AI Phone Leaderboard](https://huggingface.co/spaces/a-ghorbani/ai-phone-leaderboard).
+4. Share your benchmark results and compare with other devices on the [PocketPal AI Phone Leaderboard](https://huggingface.co/spaces/a-ghorbani/ai-phone-leaderboard).
 
 <img src="assets/images and logos/Benchmark.png" alt="Benchmark Screenshot" width="100%">
 
@@ -155,7 +155,7 @@ Access gated models from Hugging Face by setting up your authentication token:
 
    <img src="assets/images and logos/Get_token_from_HF.png" alt="Get Token from Hugging Face" width="1000%">
 
-2. In Kusmus AI:
+2. In PocketPal AI:
    - Navigate to the Settings page
    - Tap on "Set Token"
    - Paste your personal access token in the text input
@@ -320,7 +320,7 @@ For questions or feedback, please open an issue.
 
 ## Acknowledgements
 
-Kusmus AI is built using the amazing work from:
+PocketPal AI is built using the amazing work from:
 
 - **[llama.cpp](https://github.com/ggerganov/llama.cpp)**: Enables efficient inference of LLMs on local devices.
 - **[llama.rn](https://github.com/mybigday/llama.rn)**: Implements llama.cpp bindings into React Native.

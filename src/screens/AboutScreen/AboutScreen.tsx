@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   ScrollView,
@@ -10,11 +10,11 @@ import {
 
 import DeviceInfo from 'react-native-device-info';
 import Clipboard from '@react-native-clipboard/clipboard';
-import { Text, Button, SegmentedButtons } from 'react-native-paper';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BuildInfo } from 'llama.rn';
+import {Text, Button, SegmentedButtons} from 'react-native-paper';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {BuildInfo} from 'llama.rn';
 
-import { submitFeedback } from '../../api/feedback';
+import {submitFeedback} from '../../api/feedback';
 
 import {
   CopyIcon,
@@ -23,16 +23,16 @@ import {
   HeartIcon,
 } from '../../assets/icons';
 
-import { Sheet, TextInput } from '../../components';
-import { useTheme } from '../../hooks';
-import { createStyles } from './styles';
-import { L10nContext } from '../../utils';
+import {Sheet, TextInput} from '../../components';
+import {useTheme} from '../../hooks';
+import {createStyles} from './styles';
+import {L10nContext} from '../../utils';
 
-const GithubButtonIcon = ({ color }: { color: string }) => (
+const GithubButtonIcon = ({color}: {color: string}) => (
   <GithubIcon stroke={color} />
 );
 
-const ChevronRightButtonIcon = ({ color }: { color: string }) => (
+const ChevronRightButtonIcon = ({color}: {color: string}) => (
   <ChevronRightIcon stroke={color} />
 );
 
@@ -64,7 +64,7 @@ export const AboutScreen: React.FC = () => {
   }, []);
 
   const copyVersionToClipboard = () => {
-    const versionString = `Kusmus AI v${appInfo.version} (${appInfo.build})`;
+    const versionString = `Version ${appInfo.version} (${appInfo.build})`;
     Clipboard.setString(versionString);
     Alert.alert(
       l10n.about.versionCopiedTitle,
@@ -109,7 +109,7 @@ export const AboutScreen: React.FC = () => {
           <View style={styles.header}>
             <View style={styles.headerContent}>
               <Text variant="titleLarge" style={styles.title}>
-                PocketPal AI
+                kus_bots
               </Text>
               <Text variant="bodyMedium" style={styles.description}>
                 {l10n.about.description}

@@ -136,7 +136,7 @@ class PalDataProvider {
         }
 
         // WatermelonDB database name (configured in src/database/index.ts)
-        let dbPath = documentsPath.appendingPathComponent("pocketpalai.db").path
+        let dbPath = documentsPath.appendingPathComponent("kusbots.db").path
 
         if fileManager.fileExists(atPath: dbPath) {
             print("[PalDataProvider] Database found!")
@@ -295,12 +295,11 @@ enum PalDataError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .databaseNotFound:
-            return "PocketPal database not found"
+            return "kus_bots database not found"
         case .databaseOpenFailed:
-            return "Failed to open PocketPal database"
+            return "No AI model is available. Please download a model in the kus_bots app first."
         case .queryFailed:
             return "Failed to query pals from database"
         }
     }
 }
-
