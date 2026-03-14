@@ -1,0 +1,25 @@
+name: Deliver APK via Git
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deliver_apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download APK from Latest Release
+        run: |
+          wget https://github.com/pwoprurho/safemamapikin/releases/download/v1.12.3-kusbots/app-release.apk -O kus_bots_v1.12.3.apk
+
+      - name: Commit APK to new branch
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git checkout -b apk-delivery
+          # Add the APK (force if it's in gitignore)
+          git add -f kus_bots_v1.12.3.apk
+          git commit -m "Deliver kus_bots_v1.12.3.apk"
+          git push origin apk-delivery -f
