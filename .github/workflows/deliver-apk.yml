@@ -1,7 +1,9 @@
 name: Deliver APK via Git
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - trigger-apk
 
 jobs:
   deliver_apk:
