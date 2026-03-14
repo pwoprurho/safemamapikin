@@ -3,7 +3,7 @@ name: Deliver APK via Git
 on:
   push:
     branches:
-      - trigger-apk
+      - main
 
 jobs:
   deliver_apk:
